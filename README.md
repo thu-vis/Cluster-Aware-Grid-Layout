@@ -1,7 +1,7 @@
-Cluster-Aware gridlayout Algorithm
+Cluster-Aware Grid Layout Algorithm
 ==================================================================
 
-Codes for gridlayout algorithm described in our paper ["Cluster-Aware Grid Layout"](https://xxxx) (xxxx).
+Codes for grid layout algorithm described in our paper ["Cluster-Aware Grid Layout"](https://xxxx) (xxxx).
 
 Compile
 ----------
