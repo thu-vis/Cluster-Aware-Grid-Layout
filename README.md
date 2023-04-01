@@ -27,6 +27,6 @@ This code is also used the published code of [fast-lapjv](https://github.com/thu
 
 ## Contact
 If you have any problem about our code, feel free to contact
-- yx-zhou19@mails.tsinghua.edu.cn
+- thuvisCAgridlayout@163.com
 
 or describe your problem in Issues.
