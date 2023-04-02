@@ -16,7 +16,7 @@ Usage Example
 -----
 Run this example to compare our method and baseline method. Runing this example requires the installation of [scipy](https://www.scipy.org/), [numpy](https://www.numpy.org/) and [matplotlib](https://github.com/matplotlib/matplotlib)
 
-Node: Download data in http://xxxx, and unzip in the root directory.
+Node: Download data in [Google Drive](https://drive.google.com/file/d/11Jas4sRB1uAhCDsYQQBppyc-55SFyl50/view?usp=share_link), and unzip in the root directory.
       Also need to move the compiled c++ package to the same directory as the py file.
 ```
 python test_now/grid_clean.py
