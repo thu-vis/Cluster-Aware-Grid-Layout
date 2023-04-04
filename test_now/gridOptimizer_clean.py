@@ -197,21 +197,6 @@ class gridOptimizer(object):
         t2 = end2 - start
 
         if useLocal:
-            if convex_type == "CE":
-                ans, new_cost = solve_op(ori_embedded, ans, "C", 1, 0, False, None, 0, 3, 2147483647)
-                convex_type = "E"
-
-            if convex_type == "EC":
-                ans, new_cost = solve_op(ori_embedded, ans, "E", 1, 0, False, None, 0, 3, 2147483647)
-                convex_type = "C"
-
-            if convex_type == "ST":
-                ans, new_cost = solve_op(ori_embedded, ans, "S", 1, 0, False, None, 0, 3, 2147483647)
-                convex_type = "T"
-
-            if convex_type == "TS":
-                ans, new_cost = solve_op(ori_embedded, ans, "T", 1, 0, False, None, 5, 0, 2147483647)
-                convex_type = "S"
 
             ans, new_cost = solve_op(ori_embedded, ans, convex_type, 1, 0, False, None, maxit, maxit2, swap_cnt)
 
@@ -260,26 +245,18 @@ class gridOptimizer(object):
         t1 = end - start
 
         # 计算其他指标
-        # if convex_type != "T":
-        #     _, new_cost2 = solve_op(ori_embedded, ans, "T", 1, 0, False, None, 0, 0)
-        #     new_cost = np.append(new_cost, [new_cost2[2]], None)
-        #     new_cost[2], new_cost[3] = new_cost[3], new_cost[2]
-        # else:
-        #     # _, new_cost2 = solve_op(ori_embedded, ans, "E", 1, 0, False, None, 0, 0)
-        #     _, new_cost2 = solve_op(ori_embedded, ans, "2020", 1, 0, False, None, 0, 0)
-        #     new_cost = np.append(new_cost, [new_cost2[2]], None)
 
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "T")
+        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "Triple")
         new_cost = np.array([new_cost2[0], new_cost2[1], new_cost2[2]])
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "S")
+        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "AreaRatio")
         new_cost = np.append(new_cost, [new_cost2[2]], None)
         new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "AlphaT")
         new_cost = np.append(new_cost, [new_cost2[2]], None)
         new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "2020")
         new_cost = np.append(new_cost, [new_cost2[2]], None)
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "C")
+        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "PerimeterRatio")
         new_cost = np.append(new_cost, [new_cost2[2]], None)
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "E")
+        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "CutRatio")
         new_cost = np.append(new_cost, [new_cost2[2]], None)
         new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "B")
         new_cost = np.append(new_cost, [new_cost2[2]], None)
@@ -287,7 +264,7 @@ class gridOptimizer(object):
         return ans, t1, t2, new_cost, new_cost2[3]
 
     # 生成gridlayout
-    def grid(self, X_embedded: np.ndarray, labels: np.ndarray = None, type='E', maxit=10, maxit2=5, use_global=True,
+    def grid(self, X_embedded: np.ndarray, labels: np.ndarray = None, type='Triple', maxit=10, maxit2=5, use_global=True,
              use_local=True, only_compact=False, swap_cnt=2147483647, pred_labels=None, swap_op_order=False,
              choose_k=1):
         if pred_labels is None:

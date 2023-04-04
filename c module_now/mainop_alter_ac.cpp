@@ -350,7 +350,7 @@ int maxit=10) {
 
     getOriginCostMatrixArrayToArray(ori_embedded, cluster_labels, Similar_cost_matrix, N, num, square_len, maxLabel);
 
-    if((type=="T")&&(global_cnt>=0)){    // clear the memory of measure by triples
+    if((type=="Triple")&&(global_cnt>=0)){    // clear the memory of measure by triples
         delete[] global_triples;
         delete[] global_triples_head;
         delete[] global_triples_list;
@@ -395,9 +395,9 @@ int maxit=10) {
 //    struct timespec cv_start_time = {0, 0};
 //    clock_gettime(CLOCK_REALTIME, &cv_start_time);
 
-    if(type=="E")
+    if(type=="CutRatio")
         last_cost = checkCostForE(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
-    else if(type=="T")
+    else if(type=="Triple")
         last_cost = checkCostForT(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
     else if(type=="2020")
         last_cost = checkCostFor2020(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
@@ -439,7 +439,7 @@ int maxit=10) {
     bool use_knn = false;
     int k_value = 20;
 
-    if((type!="E")&&(type!="T")&&(type!="2020")&&(type!="Global"))maxit = 0;
+    if((type!="CutRatio")&&(type!="Triple")&&(type!="2020")&&(type!="Global"))maxit = 0;
 
     // information of triples measure to save and load
     int *save_innerDict = new int[N*maxLabel];
@@ -497,9 +497,9 @@ int maxit=10) {
         }
 
         // get convexity cost matrix
-        if(type=="E")
+        if(type=="CutRatio")
             getCostMatrixForEArrayToArray(grid_asses, cluster_labels, Convex_cost_matrix, N, num, square_len, maxLabel);
-        else if(type=="T") {
+        else if(type=="Triple") {
 //            if(it<=1) {
             // printf("change num %d\n", change_num);
             if((it<=0)||(change_num>=N/30)) {    // too many changed grids
@@ -593,9 +593,9 @@ int maxit=10) {
 
         double cost = 2147483647;    // calculate the cost after bi-graph match
         std::vector<double> new_cost(4, 2147483647);
-        if(type=="E")
+        if(type=="CutRatio")
             new_cost = checkCostForE(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
-        else if(type=="T") {
+        else if(type=="Triple") {
 //            if(it<=1) {
             if((it<=0)||(change_num>=N/30)) {
                 new_cost = checkCostForT(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta,
@@ -658,7 +658,7 @@ int maxit=10) {
 //       clock_gettime(CLOCK_REALTIME, &time2);
 //       std::cout << "it time passed is: " << (time2.tv_sec - time1.tv_sec)*1000 + (time2.tv_nsec - time1.tv_nsec)/1000000 << "ms" << std::endl;
 
-        if((type=="T")||(type=="2020")) {   // case that need to ensure the connectivity in this function
+        if((type=="Triple")||(type=="2020")) {   // case that need to ensure the connectivity in this function
 //            if(((!alter)&&(c_best>0))||((alter)&&(last_c_cost>0))){
             if(c_best>0){
                 if(it >= maxit-1)maxit += 1;
@@ -691,7 +691,7 @@ int maxit=10) {
 //    clock_gettime(CLOCK_REALTIME, &tot_time2);
 //    std::cout << "ret time passed is: " << (tot_time2.tv_sec - tot_time1.tv_sec)*1000 + (tot_time2.tv_nsec - tot_time1.tv_nsec)/1000000 << "ms" << std::endl;
 
-    if((type=="T")&&(global_cnt>=0)){
+    if((type=="Triple")&&(global_cnt>=0)){
         delete[] global_triples;
         delete[] global_triples_head;
         delete[] global_triples_list;
@@ -786,17 +786,17 @@ int maxit=10, int choose_k=1, int seed=10, bool innerBiMatch=true, int swap_cnt=
     for(int i=0;i<N;i++)if_disconn[i] = false;
     int *checked = new int[N];
 
-    if(type=="E")
+    if(type=="CutRatio")
         best = checkCostForE(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
-    else if(type=="S")
+    else if(type=="AreaRatio")
         best = checkCostForS(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
-    else if(type=="C")
+    else if(type=="PerimeterRatio")
         best = checkCostForC(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
     else if(type=="2020")
         best = checkCostFor2020(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
     else if(type=="TB")
         best = checkCostForTB(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
-    else if(type=="T")
+    else if(type=="Triple")
         best = checkCostForT(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, true, false, old_grid_asses, old_T_pair)[0];
     else if(type=="Global")
         best = checkCostForGlobal(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
@@ -825,14 +825,14 @@ int maxit=10, int choose_k=1, int seed=10, bool innerBiMatch=true, int swap_cnt=
 
     int max_num = 2;    // max bar length to search
     for(int it=0;it<maxit;it++){    //枚举轮次
-        if(type=="E"||type=="S"||type=="C"||type=="2020"||type=="T"||type=="T2"||type=="TB"){
+        if(type=="CutRatio"||type=="AreaRatio"||type=="PerimeterRatio"||type=="2020"||type=="Triple"||type=="T2"||type=="TB"){
 
             int update_flag = 0;    // if layout been updated
             int improve_flag = 0;    // if find a better layout
-            // if(type=="S")max_num = 1;
-            // if(type=="T")max_num = 1;
+            // if(type=="AreaRatio")max_num = 1;
+            // if(type=="Triple")max_num = 1;
             // if(type=="2020")max_num = 1;
-            // if(type=="C")max_num = 6;
+            // if(type=="PerimeterRatio")max_num = 6;
 
             double (*label_pairs)[2] = new double[maxLabel][2];    // convexity of every cluster
             int *worst_gid = new int[2*N*max_num];    // bar2
@@ -912,7 +912,7 @@ int maxit=10, int choose_k=1, int seed=10, bool innerBiMatch=true, int swap_cnt=
                         }
                         if(dcnt<=now_num)continue;    //not enough edges with a different clusters
 
-                        // if((type=="T")&&(dcnt<=now_num+1))continue;
+                        // if((type=="Triple")&&(dcnt<=now_num+1))continue;
 
                         check_turns1 += 1;
 
@@ -965,7 +965,7 @@ int maxit=10, int choose_k=1, int seed=10, bool innerBiMatch=true, int swap_cnt=
                                     if(dcnt2<=max(now_num-1,0))continue;    // not enough edges with a different cluster
                                 }
 
-                                // if((type=="T")&&(x1!=x2)&&(y1!=y2))continue;
+                                // if((type=="Triple")&&(x1!=x2)&&(y1!=y2))continue;
 
                                 for(int i=0;i<now_num;i++)worst_gid[worst_cnt*now_num+i] = now_gid2[i];    // be candidate
                                 worst_cnt += 1;
@@ -985,17 +985,17 @@ int maxit=10, int choose_k=1, int seed=10, bool innerBiMatch=true, int swap_cnt=
                         double ori_cost = 0;    // cost
                         double ori_c_cost = 0;    // connectivity cost(constraint)
 
-                        if(type=="E")
+                        if(type=="CutRatio")
                             now_best =checkCostForE(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
-                        else if(type=="S")
+                        else if(type=="AreaRatio")
                             now_best =checkCostForS(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, true, false, label_pairs)[0];
-                        else if(type=="C")
+                        else if(type=="PerimeterRatio")
                             now_best =checkCostForC(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, true, false, label_pairs)[0];
                         else if(type=="2020")
                             now_best =checkCostFor2020(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, true, false, label_pairs)[0];
                         else if(type=="TB")
                             now_best =checkCostForTB(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, true, false, label_pairs)[0];
-                        else if(type=="T") {
+                        else if(type=="Triple") {
                             now_best =checkCostForT(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, true, true, old_grid_asses, old_T_pair)[0];
                             for(int tmp_gid=0;tmp_gid<N;tmp_gid++)old_grid_asses[tmp_gid] = grid_asses[tmp_gid];
                         }
@@ -1051,17 +1051,17 @@ int maxit=10, int choose_k=1, int seed=10, bool innerBiMatch=true, int swap_cnt=
                             double c_cost = 0;    // new connectivity cost
                             double b_cost = 0;
 
-                            if(type=="E")
+                            if(type=="CutRatio")
                                 cost = checkCostForE(Similar_cost_matrix, Compact_cost_matrix, tmp_grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
-                            else if(type=="S")
+                            else if(type=="AreaRatio")
                                 cost = checkCostForS(Similar_cost_matrix, Compact_cost_matrix, tmp_grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, false, true, label_pairs, lb1, lb2)[0];
-                            else if(type=="C")
+                            else if(type=="PerimeterRatio")
                                 cost = checkCostForC(Similar_cost_matrix, Compact_cost_matrix, tmp_grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, false, true, label_pairs, lb1, lb2)[0];
                             else if(type=="2020")
                                 cost = checkCostFor2020(Similar_cost_matrix, Compact_cost_matrix, tmp_grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, false, true, label_pairs, lb1, lb2)[0];
                             else if(type=="TB")
                                 cost = checkCostForTB(Similar_cost_matrix, Compact_cost_matrix, tmp_grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, false, true, label_pairs, lb1, lb2)[0];
-                            else if(type=="T")
+                            else if(type=="Triple")
                                 cost = checkCostForT(Similar_cost_matrix, Compact_cost_matrix, tmp_grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, false, true, old_grid_asses, old_T_pair)[0];
                             else if(type=="T2")
                                 cost = checkCostForT2(Similar_cost_matrix, Compact_cost_matrix, tmp_grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, false, true, old_grid_asses, old_T_pair, old_D_pair)[0];
@@ -1141,17 +1141,17 @@ int maxit=10, int choose_k=1, int seed=10, bool innerBiMatch=true, int swap_cnt=
                                 std::swap(grid_asses[ori_gid1[k]], grid_asses[worst_gid[best_gid*now_num+k]]);
                             }
 
-                            if(type=="E")
+                            if(type=="CutRatio")
                                 cost = checkCostForE(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
-                            else if(type=="S")
+                            else if(type=="AreaRatio")
                                 cost = checkCostForS(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
-                            else if(type=="C")
+                            else if(type=="PerimeterRatio")
                                 cost = checkCostForC(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
                             else if(type=="2020")
                                 cost = checkCostFor2020(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
                             else if(type=="TB")
                                 cost = checkCostForTB(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta)[0];
-                            else if(type=="T") {
+                            else if(type=="Triple") {
                                 cost = checkCostForT(Similar_cost_matrix, Compact_cost_matrix, grid_asses, cluster_labels, N, num, square_len, maxLabel, alpha, beta, true, true, old_grid_asses, old_T_pair)[0];
                                 for(int tmp_gid=0;tmp_gid<N;tmp_gid++)old_grid_asses[tmp_gid] = grid_asses[tmp_gid];
                             }
@@ -1216,7 +1216,7 @@ int maxit=10, int choose_k=1, int seed=10, bool innerBiMatch=true, int swap_cnt=
 
             printf("downCnt %d\n", downCnt);
             if(downCnt>=downMax) {
-//                if(type=="C")continue;
+//                if(type=="PerimeterRatio")continue;
                 break;
             }
         }
@@ -1257,17 +1257,17 @@ int maxit=10, int choose_k=1, int seed=10, bool innerBiMatch=true, int swap_cnt=
 
     // printf("final cost\n");
     std::vector<double> cost(4, -1);
-    if(type=="E")
+    if(type=="CutRatio")
         cost = checkCostForE(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
-    else if(type=="S")
+    else if(type=="AreaRatio")
         cost = checkCostForS(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
-    else if(type=="C")
+    else if(type=="PerimeterRatio")
         cost = checkCostForC(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
     else if(type=="2020")
         cost = checkCostFor2020(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
     else if(type=="TB")
         cost = checkCostForTB(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
-    else if(type=="T") {
+    else if(type=="Triple") {
         cost = checkCostForT(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta, true, true, old_grid_asses, old_T_pair);
         for(int tmp_gid=0;tmp_gid<N;tmp_gid++)old_grid_asses[tmp_gid] = ans[tmp_gid];
     }
@@ -1371,17 +1371,17 @@ int min_grids=0) {
         }
 
         std::vector<double> cost(4, -1);
-        if(type=="E")
+        if(type=="CutRatio")
             cost = checkCostForE(Similar_cost_matrix, Compact_cost_matrix, ans, ans_labels, N, cnt, square_len, 1, alpha, beta);
-        else if(type=="S")
+        else if(type=="AreaRatio")
             cost = checkCostForS(Similar_cost_matrix, Compact_cost_matrix, ans, ans_labels, N, cnt, square_len, 1, alpha, beta);
-        else if(type=="C")
+        else if(type=="PerimeterRatio")
             cost = checkCostForC(Similar_cost_matrix, Compact_cost_matrix, ans, ans_labels, N, cnt, square_len, 1, alpha, beta);
         else if(type=="2020")
             cost = checkCostFor2020(Similar_cost_matrix, Compact_cost_matrix, ans, ans_labels, N, cnt, square_len, 1, alpha, beta);
         else if(type=="TB")
             cost = checkCostForTB(Similar_cost_matrix, Compact_cost_matrix, ans, ans_labels, N, cnt, square_len, 1, alpha, beta);
-        else if(type=="T") {
+        else if(type=="Triple") {
             cost = checkCostForT(Similar_cost_matrix, Compact_cost_matrix, ans, ans_labels, N, cnt, square_len, 1, alpha, beta, true, false, old_grid_asses, old_T_pair);
             for(int tmp_gid=0;tmp_gid<N;tmp_gid++)old_grid_asses[tmp_gid] = ans[tmp_gid];
         }
@@ -1521,17 +1521,17 @@ int min_grids=0) {
 
     std::vector<double> cost(4, -1);
 
-    if(type=="E")
+    if(type=="CutRatio")
         cost = checkCostForE(Similar_cost_matrix, Compact_cost_matrix, all_ans, all_labels, N, all_cnt, square_len, clusters_cnt, alpha, beta);
-    else if(type=="S")
+    else if(type=="AreaRatio")
         cost = checkCostForS(Similar_cost_matrix, Compact_cost_matrix, all_ans, all_labels, N, all_cnt, square_len, clusters_cnt, alpha, beta);
-    else if(type=="C")
+    else if(type=="PerimeterRatio")
         cost = checkCostForC(Similar_cost_matrix, Compact_cost_matrix, all_ans, all_labels, N, all_cnt, square_len, clusters_cnt, alpha, beta);
     else if(type=="2020")
         cost = checkCostFor2020(Similar_cost_matrix, Compact_cost_matrix, all_ans, all_labels, N, all_cnt, square_len, clusters_cnt, alpha, beta);
     else if(type=="TB")
         cost = checkCostForTB(Similar_cost_matrix, Compact_cost_matrix, all_ans, all_labels, N, all_cnt, square_len, clusters_cnt, alpha, beta);
-    else if(type=="T") {
+    else if(type=="Triple") {
         cost = checkCostForT(Similar_cost_matrix, Compact_cost_matrix, all_ans, all_labels, N, all_cnt, square_len, clusters_cnt, alpha, beta, true, false, old_grid_asses, old_T_pair);
         for(int tmp_gid=0;tmp_gid<N;tmp_gid++)old_grid_asses[tmp_gid] = all_ans[tmp_gid];
     }
@@ -1614,17 +1614,17 @@ double alpha, double beta) {
 
     printf("final cost\n");
     std::vector<double> cost(4, -1);
-    if(type=="E")
+    if(type=="CutRatio")
         cost = checkCostForE(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
-    else if(type=="S")
+    else if(type=="AreaRatio")
         cost = checkCostForS(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
-    else if(type=="C")
+    else if(type=="PerimeterRatio")
         cost = checkCostForC(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
     else if(type=="2020")
         cost = checkCostFor2020(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
     else if(type=="TB")
         cost = checkCostForTB(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta);
-    else if(type=="T") {
+    else if(type=="Triple") {
         cost = checkCostForT(Similar_cost_matrix, Compact_cost_matrix, ans, cluster_labels, N, num, square_len, maxLabel, alpha, beta, true, false, old_grid_asses, old_T_pair);
         for(int tmp_gid=0;tmp_gid<N;tmp_gid++)old_grid_asses[tmp_gid] = ans[tmp_gid];
     }

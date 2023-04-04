@@ -167,15 +167,7 @@ def body(dataset, grid_width, flag, tt, rid):
     # # showT = ""
     # showT = "-NoneText"
 
-    # for type in ["O", "S", "T", "E", "C"]:
-    # for type in ["C", "E", "EC", "CE", "CplusE"]:
-    # for type in ["T", "S", "ST", "TS", "C", "E", "EC", "CE"]:
-    # for type in ["C", "E", "EC", "CE"]:
-    # for type in ["O", "T", "ST", "EC"]:
-    for type in ["O", "T", "C"]:
-    # for type in ["O", "T"]:
-    # for type in ["O", "C"]:
-    # for type in ["T", "C", "E", "EC", "CE"]:
+    for type in ["O", "Triple", "PerimeterRatio"]:
         use_type = type
         # for showT in ["", "-NoneText"]:
         showT = "-NoneText"
@@ -193,7 +185,7 @@ def body(dataset, grid_width, flag, tt, rid):
                     continue
                 if (type == "O") and ((op_type != "base") and (op_type != 'global')):
                     continue
-                if ((type != "C") and (type != "T")) and ((op_type == "local") or (op_type == "full2")):
+                if ((type != "PerimeterRatio") and (type != "Triple")) and ((op_type == "local") or (op_type == "full2")):
                     continue
 
                 swap_op_order = False
@@ -202,29 +194,16 @@ def body(dataset, grid_width, flag, tt, rid):
 
                 m1 = 0
                 m2 = 3
-                if type == "E":
+                if type == "CutRatio":
                     m1 = 0
                     m2 = 3
-                if type == "C":
+                if type == "PerimeterRatio":
                     m1 = 0
                     m2 = 8
-                if type == "CplusE":
-                    m1 = 0
-                    m2 = 3
-                if type == "T":
+                if type == "Triple":
                     m1 = 5
                     m2 = 0
-                if type == "Tswap":
-                    m1 = 0
-                    m2 = 3
-                    use_type = "T"
-                if type == "ST":
-                    m1 = 5
-                    m2 = 0
-                if type == "S":
-                    m1 = 0
-                    m2 = 3
-                if type == "TS":
+                if type == "AreaRatio":
                     m1 = 0
                     m2 = 3
                 if type == "O":
@@ -363,6 +342,6 @@ for key in dict:
     print(key, "----", "%.3lf"%dict[key][0], "&", "%.3lf"%dict[key][1], "&", "%.3lf"%dict[key][2], "&", "%.3lf"%dict[key][3], "&", "%.3lf"%dict[key][4], "&", "%.3lf"%dict[key][5], "&", "%.3lf"%dict[key][6], "&", "%.3lf"%dict[key][7], "&", "%.3lf"%dict[key][8], "&", "%.3lf"%dict[key][t])
 
 import pickle
-f = open("all_data3.1.pkl", 'wb+')
+f = open("all_data3.pkl", 'wb+')
 pickle.dump({"dict": dict}, f, 0)
 f.close()
