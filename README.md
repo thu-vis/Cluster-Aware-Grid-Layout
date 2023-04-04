@@ -1,5 +1,9 @@
 Cluster-Aware Grid Layout Algorithm
-==================================================================
+===========================
+
+https://user-images.githubusercontent.com/129478716/229704745-f38ecd8d-d53b-4cf7-a061-42c2d1005834.mp4
+
+=======================================
 
 Codes for grid layout algorithm described in our paper ["Cluster-Aware Grid Layout"](https://xxxx) (xxxx).
 
@@ -27,6 +31,6 @@ This code is also used the published code of [fast-lapjv](https://github.com/thu
 
 ## Contact
 If you have any problem about our code, feel free to contact
-
+- CA_gridlayout@126.com
 
 or describe your problem in Issues.
