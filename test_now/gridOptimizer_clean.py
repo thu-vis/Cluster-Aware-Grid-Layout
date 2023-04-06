@@ -35,43 +35,6 @@ class gridOptimizer(object):
         # print('end KM')
         return row_asses, col_asses
 
-    # DFS检查联通性
-    def checkConnectDFS(self, row_asses, labels, x, y, lb, checked, num, square_len, connect):
-        gid = x * square_len + y
-        if checked[gid] == 1:
-            return
-        checked[gid] = 1
-        f_x = [-1, 0, 0, 1, 1, -1, 1, -1]
-        f_y = [0, -1, 1, 0, 1, 1, -1, -1]
-        for i in range(connect):
-            x2 = x + f_x[i]
-            y2 = y + f_y[i]
-            if x2 < 0 or x2 >= square_len or y2 < 0 or y2 >= square_len:
-                continue
-            gid2 = x2 * square_len + y2
-            if row_asses[gid2] < num and labels[row_asses[gid2]] == lb:
-                self.checkConnectDFS(row_asses, labels, x2, y2, lb, checked, num, square_len, connect)
-
-    # 检查联通性
-    def checkConnect(self, row_asses, labels, gid, show=False, connect=4):
-        num = labels.shape[0]
-        if row_asses[gid] >= num:
-            return 0
-        id = row_asses[gid]
-        N = row_asses.shape[0]
-        square_len = math.ceil(np.sqrt(N))
-        checked = np.zeros(N, dtype='int')
-        lb = labels[id]
-        x = int(gid / square_len)
-        y = gid - square_len * x
-        self.checkConnectDFS(row_asses, labels, x, y, lb, checked, num, square_len, connect)
-        per = checked.sum() / (labels == lb).sum()
-        # if show:
-        #     print('show per', checked.sum(), (labels == lb).sum())
-        if per > 0.55:
-            return 0
-        return 1
-
     def check_cost_type(self, ori_embedded, row_asses, labels, type):
         # tmp_row_asses = np.array(
         #     gridlayoutOpt.optimizeSwap(ori_embedded, row_asses, labels, change, type, 1, 0,
@@ -84,8 +47,8 @@ class gridOptimizer(object):
         # print(new_cost)
         return new_cost
 
-    # 优化gridlayout
-    def grid_op(self, ori_embedded, row_asses, labels, useGlobal=True, useLocal=True, convex_type="E", maxit=10,
+    # optimize gridlayout (ours)
+    def grid_op(self, ori_embedded, row_asses, labels, useGlobal=True, useLocal=True, convex_type="Triple", maxit=10,
                 maxit2=5, only_compact=False, swap_cnt=2147483647, swap_op_order=False, choose_k=1):
 
         start = time.time()
@@ -244,26 +207,10 @@ class gridOptimizer(object):
         end = time.time()
         t1 = end - start
 
-        # 计算其他指标
+        # return ans, t1, t2, new_cost, new_cost2[3]
+        return ans, t1, t2
 
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "Triple")
-        new_cost = np.array([new_cost2[0], new_cost2[1], new_cost2[2]])
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "AreaRatio")
-        new_cost = np.append(new_cost, [new_cost2[2]], None)
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "AlphaT")
-        new_cost = np.append(new_cost, [new_cost2[2]], None)
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "2020")
-        new_cost = np.append(new_cost, [new_cost2[2]], None)
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "PerimeterRatio")
-        new_cost = np.append(new_cost, [new_cost2[2]], None)
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "CutRatio")
-        new_cost = np.append(new_cost, [new_cost2[2]], None)
-        new_cost2 = self.check_cost_type(ori_embedded, ans, labels, "B")
-        new_cost = np.append(new_cost, [new_cost2[2]], None)
-
-        return ans, t1, t2, new_cost, new_cost2[3]
-
-    # 生成gridlayout
+    # baseline + ours
     def grid(self, X_embedded: np.ndarray, labels: np.ndarray = None, type='Triple', maxit=10, maxit2=5, use_global=True,
              use_local=True, only_compact=False, swap_cnt=2147483647, pred_labels=None, swap_op_order=False,
              choose_k=1):
@@ -284,66 +231,10 @@ class gridOptimizer(object):
             label = labels[id]
             maxLabel = max(maxLabel, label + 1)
 
-        labelCheckList = np.zeros(shape=(maxLabel + 1, maxLabel + 1), dtype=bool)
-        for i in range(maxLabel):
-            for j in range(maxLabel):
-                if i != j:
-                    labelCheckList[i][j] = True
-
         def getDist(x1, y1, x2, y2):
             return np.sqrt(np.square(x1 - x2) + np.square(y1 - y2))
 
-        # 检查近邻关系变化情况
-        def checkNeighbor(old_row_asses, col_asses, show=False):
-            dist_inc_list = []
-            dist_inc_list_same = []
-            for old_gid1 in range(N):
-                for old_gid2 in range(N):
-                    if old_gid1 >= old_gid2:
-                        continue
-                    old_x1 = int(old_gid1 / square_len)
-                    old_y1 = old_gid1 - square_len * old_x1
-                    old_x2 = int(old_gid2 / square_len)
-                    old_y2 = old_gid2 - square_len * old_x2
-                    old_dist = getDist(old_x1, old_y1, old_x2, old_y2)
-                    if old_dist > 2:
-                        continue
-                    id1 = old_row_asses[old_gid1]
-                    id2 = old_row_asses[old_gid2]
-                    if id1 >= num or id2 >= num:
-                        continue
-                    gid1 = col_asses[id1]
-                    x1 = int(gid1 / square_len)
-                    y1 = gid1 - square_len * x1
-                    gid2 = col_asses[id2]
-                    x2 = int(gid2 / square_len)
-                    y2 = gid2 - square_len * x2
-                    dist_inc_list.append(getDist(x1, y1, x2, y2) - old_dist)
-                    if labels[id1] == labels[id2]:
-                        dist_inc_list_same.append(getDist(x1, y1, x2, y2) - old_dist)
-            dist_inc_list = np.array(dist_inc_list)
-            dist_inc_list_same = np.array(dist_inc_list_same)
-            tot = dist_inc_list.shape[0]
-            tot_same = dist_inc_list_same.shape[0]
-            if show:
-                X = []
-                Y = []
-                X_same = []
-                Y_same = []
-                for x in range(1000):
-                    x /= 100
-                    X.append(x)
-                    Y.append((dist_inc_list <= x).sum() / tot)
-                    X_same.append(x)
-                    Y_same.append((dist_inc_list_same <= x).sum() / tot_same)
-                plt.plot(X, Y)
-                plt.plot(X_same, Y_same)
-                plt.show()
-                print('all', dist_inc_list.sum() / tot)
-                print('same', dist_inc_list_same.sum() / tot_same)
-            return dist_inc_list, dist_inc_list_same
-
-        # 生成初始layout
+        # baseline layout
         grids = np.dstack(np.meshgrid(np.linspace(0, 1 - 1.0 / square_len, square_len),
                                       np.linspace(0, 1 - 1.0 / square_len, square_len))) \
             .reshape(-1, 2)
@@ -363,16 +254,10 @@ class gridOptimizer(object):
 
         cost_matrix = np.power(cost_matrix, 2)
 
-        # row_asses, col_asses, info = fastlapjv(cost_matrix, k_value=50 if len(cost_matrix)>50 else len(cost_matrix))
         # row_asses, col_asses = self.solveKM(cost_matrix)
         row_asses, col_asses = self.solveJV(cost_matrix)
         # col_asses = col_asses[:num]
         # self.show_grid(row_asses, labels, square_len, 'new.png')
-
-        # 补全labels
-        # labels = np.concatenate((labels, np.full(shape=(N-num), dtype='int', fill_value=maxLabel)), axis=0)
-        # num = N
-        # maxLabel = maxLabel+1
 
         old_X_embedded = X_embedded
         ori_row_asses = row_asses.copy()
@@ -380,15 +265,14 @@ class gridOptimizer(object):
         ori_labels = labels.copy()
 
         t0 = time.time() - start
-        # 简单聚类
+
+        # cluster labels
         print("start cluster")
         # labels = np.array(gridlayoutOpt.getClusters2(ori_row_asses, labels, pred_labels))
         labels = pred_labels.copy()
         maxLabel = labels.max() + 1
         print("end cluster")
-        # self.show_grid(row_asses, ori_labels, square_len, 'new0.png')
-        # self.show_grid(row_asses, labels, square_len, 'new1.png')
-        # return row_asses, 0, 0
+
 
         # datas = np.load("T-base.npz")
         # labels = datas['labels']
@@ -403,35 +287,23 @@ class gridOptimizer(object):
         print("--------------------------------------------------")
         start = time.time()
 
-        ans, t1, t2, new_cost, cc = self.grid_op(ori_embedded, row_asses, labels,
-                                                                                     use_global, use_local, type,
-                                                                                     maxit, maxit2, only_compact,
-                                                                                     swap_cnt, swap_op_order,
-                                                                                     choose_k=choose_k)
+        ans, t1, t2 = self.grid_op(ori_embedded, row_asses, labels,
+                                                 use_global, use_local, type,
+                                                 maxit, maxit2, only_compact,
+                                                 swap_cnt, swap_op_order,
+                                                 choose_k=choose_k)
 
         end = time.time()
         print("end optimize")
         print("--------------------------------------------------")
         print('time:', end - start)
 
-        # self.show_grid(ans, labels, square_len, 'new1.png')
-        # change_list = []
-        # for i in range(N):
-        #     if (ans[i]<num)and(labels[ans[i]]==0):
-        #         change_list.append(i)
-        # change_list = np.array(change_list)
-        # ans = self.translateAdjust(ori_embedded, ans, labels, use_global, True, type, int(maxit*1.5), int(maxit2*1.5), change_list, np.array((0, 0.3)))
-        #
-        # self.show_grid(ans, labels, square_len, 'new3.png')
-
-        # self.show_grid(row_asses, ori_labels, square_len, 'new3.png')
-        # np.savez("tmp.npz", row_asses=row_asses, labels=labels)
-
         if (maxit + maxit2) == 0:
             t1 = t2
-        return ans, t1, t0, labels, new_cost, cc, ori_row_asses
 
-    def translateAdjust(self, ori_embedded, row_asses, labels, useGlobal=True, useLocal=True, convex_type="E", maxit=5,
+        return ans, t1, t0, labels, ori_row_asses
+
+    def translateAdjust(self, ori_embedded, row_asses, labels, useGlobal=True, useLocal=True, convex_type="Triple", maxit=5,
                         maxit2=2, change_list=np.array([]), translate=np.array([0, 0])):
         N = row_asses.shape[0]
         square_len = round(np.sqrt(N))
@@ -466,27 +338,12 @@ class gridOptimizer(object):
 
         # self.show_grid(new_ori_row_asses, labels, square_len, 'new2.png')
 
-        new_row_asses, _, _, _, _ = self.grid_op(X_embedded, new_ori_row_asses, labels, useGlobal, useLocal,
+        new_row_asses, _, _ = self.grid_op(X_embedded, new_ori_row_asses, labels, useGlobal, useLocal,
                                                  convex_type, maxit, maxit2)
         # print("done")
         change = np.ones(shape=N, dtype='bool')
         new_row_asses = np.array(gridlayoutOpt.optimizeInnerCluster(ori_embedded, new_row_asses, labels, change))
         return new_row_asses
-
-    # 检查凸性
-    def checkConvex(self, row_asses, labels, type='T', labelCheckList=None, edgePer=1):
-        if type == 'T':
-            T_list = np.array(gridlayoutOpt.checkConvexForT(row_asses, labels))
-            score1 = 0
-            if T_list[1] > 0:
-                score1 = T_list[0] / T_list[1]
-            return score1
-        elif type == 'E':
-            E_list = np.array(gridlayoutOpt.checkConvexForE(row_asses, labels))
-            score1 = 0
-            if E_list[1] > 0:
-                score1 = E_list[0] / E_list[1]
-            return score1
 
     # 绘图
     def show_grid(self, row_asses, grid_labels, square_len, path='new.png', showNum=True, just_save=False):
