@@ -23,7 +23,7 @@ Run this example to compare our method and baseline method. Runing this example 
 Node: Download data in [Google Drive](https://drive.google.com/file/d/11Jas4sRB1uAhCDsYQQBppyc-55SFyl50/view?usp=share_link), and unzip in the root directory.
       Also need to move the compiled c++ package to the same directory as the py file.
 ```
-python test_now/grid_clean.py
+python test_now/demo.py
 ```
 
 ## Acknowledgement

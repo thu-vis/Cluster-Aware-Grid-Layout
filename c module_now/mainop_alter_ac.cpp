@@ -282,7 +282,8 @@ const std::string &type="km") {
         if(type=="km")
             ret0 = solveKMArray(new_dist, N2, N2);
         else
-            ret0 = solveLapArray(new_dist, N2, std::max(50, int(0.15*N)));
+            // ret0 = solveLapArray(new_dist, N2, std::max(50, int(0.15*N)));
+            ret0 = solveLapArray(new_dist, N2, N2);
 
         std::vector<int> ret(N, 0);
         for(int gid=0;gid<N;gid++)ret[gid] = grid_asses[gid];
@@ -300,7 +301,8 @@ const std::string &type="km") {
         if(type=="km")
             ret = solveKMArray(dist, N, N);
         else
-            ret = solveLapArray(dist, N, std::max(50, int(0.15*N)));
+            // ret = solveLapArray(dist, N, std::max(50, int(0.15*N)));
+            ret = solveLapArray(dist, N, N);
         delete[] changeList;
         return ret;
     }
@@ -539,8 +541,8 @@ int maxit=10) {
 
         start = clock();
 
-        std::string b_type = "km";
-        // if((type=="Global")&&(alter))b_type = "lap";
+        // std::string b_type = "km";
+        std::string b_type = "lap";
         // std::cout << "type: " << b_type << std::endl;
 
         std::vector<int> new_asses = solveBiMatchChange(new_cost_matrix, N, change, grid_asses, b_type);   // bi-graph match
