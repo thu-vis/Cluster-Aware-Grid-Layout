@@ -48,6 +48,18 @@ class gridOptimizer(object):
         return new_cost
 
     # optimize gridlayout (ours)
+    # ori_embedded: grids position of the initial layout
+    # row_asses: current layout
+    # labels: cluster labels
+    # useGlobal: if execute global step
+    # useLocal: if execute local step
+    # convex_type: type of optimized convexity measure in local step
+    # maxit: max number of rounds of bipartite graph(accelerated swap) in local step
+    # maxit2: max number of rounds of swap in local step
+    # only_compact: if generate a most compactness layout
+    # swap_cnt: max times of swap in local step
+    # swap_op_order: if execute local step first and then global step
+    # choose_k: randomly select from the top k options when swap in local step
     def grid_op(self, ori_embedded, row_asses, labels, useGlobal=True, useLocal=True, convex_type="Triple", maxit=10,
                 maxit2=5, only_compact=False, swap_cnt=2147483647, swap_op_order=False, choose_k=1):
 
@@ -211,6 +223,18 @@ class gridOptimizer(object):
         return ans, t1, t2
 
     # baseline + ours
+    # X_embedded: t-sne position of elements
+    # labels: ground truth labels
+    # type : type of optimized convexity measure in local step
+    # maxit: max number of rounds of bipartite graph(accelerated swap) in local step
+    # maxit2: max number of rounds of swap in local step
+    # use_global: if execute global step
+    # use_local: if execute local step
+    # only_compact: if generate a most compactness layout
+    # swap_cnt: max times of swap in local step
+    # pred_labels: predict labels
+    # swap_op_order: if execute local step first and then global step
+    # choose_k: randomly select from the top k options when swap in local step
     def grid(self, X_embedded: np.ndarray, labels: np.ndarray = None, type='Triple', maxit=10, maxit2=5, use_global=True,
              use_local=True, only_compact=False, swap_cnt=2147483647, pred_labels=None, swap_op_order=False,
              choose_k=1):
