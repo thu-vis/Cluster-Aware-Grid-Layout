@@ -5,7 +5,7 @@ https://user-images.githubusercontent.com/129478716/229704745-f38ecd8d-d53b-4cf7
 
 =======================================
 
-Codes for grid layout algorithm described in our paper ["Cluster-Aware Grid Layout"](https://xxxx) (xxxx).
+Codes for grid layout algorithm described in our paper ["Cluster-Aware Grid Layout"](https://xxxx) (TVCG 2023).
 
 Compile
 ----------
@@ -29,8 +29,19 @@ python test_now/demo.py
 ## Acknowledgement
 This code is also used the published code of [fast-lapjv](https://github.com/thu-vis/fast-lapjv), and it is our pleasure to acknowledge their contributions.
 
+## Citation
+If you use this code for your research, please consider citing:
+```
+@article{zhou2023clusteraware,
+    title = {Cluster-Aware Grid Layout},
+    author = {Zhou, Yuxing and Yang, Weikai and Chen, Jiashu and Chen, Changjian and Shen, Zhiyang and Luo, Xiaonan and Yu, Lingyun and Liu, Shixia},
+    journal = {IEEE Transactions on Visualization and Computer Graphics (accepted)},
+    year = {2023}
+}
+```
+
 ## Contact
 If you have any problem about our code, feel free to contact
-- CA_gridlayout@126.com
+- zhouyx23@mails.tsinghua.edu.cn
 
 or describe your problem in Issues.
