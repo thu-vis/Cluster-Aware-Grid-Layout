@@ -9,6 +9,7 @@ Codes for grid layout algorithm described in our paper ["Cluster-Aware Grid Layo
 
 Compile
 ----------
+Compile the c++ code to python library with [pybind11](https://github.com/pybind/pybind11).
 ```
 pip install pybind11
 cd "c module_now"
@@ -18,10 +19,10 @@ Tested on Windows, and Linux with python 3.8.
 
 Usage Example
 -----
-Run this example to compare our method and baseline method. Runing this example requires the installation of [scipy](https://www.scipy.org/), [numpy](https://www.numpy.org/) and [matplotlib](https://github.com/matplotlib/matplotlib)
+Run this example to compare our method and baseline method. Runing this example requires the installation of [scipy](https://www.scipy.org/), [numpy](https://www.numpy.org/) and [matplotlib](https://github.com/matplotlib/matplotlib).
 
 Node: Download data in [Google Drive](https://drive.google.com/file/d/11Jas4sRB1uAhCDsYQQBppyc-55SFyl50/view?usp=share_link), and unzip in the root directory.
-      Also need to move the compiled c++ package to the same directory as the py file.
+      Also need to move the compiled library above to the same directory as the py file.
 ```
 python test_now/demo.py
 ```

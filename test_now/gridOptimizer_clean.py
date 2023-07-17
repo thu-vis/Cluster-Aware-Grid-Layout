@@ -13,7 +13,7 @@ class gridOptimizer(object):
     def __init__(self):
         super().__init__()
 
-    def solveKM(self, cost_matrix):
+    def solveKM(self, cost_matrix):  # solve bipartite graph assignment with KM algorithm
         # print('start KM')
         # row_asses, _, _ = lapjv.lapjv(cost_matrix)
         row_asses = np.array(gridlayoutOpt.solveKM(cost_matrix))
@@ -24,7 +24,7 @@ class gridOptimizer(object):
         # print('end KM')
         return row_asses, col_asses
 
-    def solveJV(self, cost_matrix):
+    def solveJV(self, cost_matrix):  # solve bipartite graph assignment with JV algorithm
         N = cost_matrix.shape[0]
         row_asses = np.array(gridlayoutOpt.solveLap(cost_matrix, True, max(50, int(0.15 * N))))
         # row_asses = np.array(gridlayoutOpt.solveLap(cost_matrix, True, 100))
@@ -35,7 +35,7 @@ class gridOptimizer(object):
         # print('end KM')
         return row_asses, col_asses
 
-    def check_cost_type(self, ori_embedded, row_asses, labels, type):
+    def check_cost_type(self, ori_embedded, row_asses, labels, type):  # calculate the cost of grid layout
         # tmp_row_asses = np.array(
         #     gridlayoutOpt.optimizeSwap(ori_embedded, row_asses, labels, change, type, 1, 0,
         #                                0, 10, False, 0))
@@ -71,7 +71,7 @@ class gridOptimizer(object):
             if alter_best is None:
                 alter_best = [1, 1, 1, 1]
 
-            # 迭代二分图匹配优化
+            # iterative optimization
             new_row_asses = row_asses.copy()
             new_row_asses2 = row_asses.copy()
             ans_row_asses = row_asses.copy()
@@ -82,7 +82,7 @@ class gridOptimizer(object):
             print("````````````````````")
             change = np.ones(shape=N, dtype='bool')
 
-            if maxit > 0:
+            if maxit > 0:  # iteration times for bipartite graph assignment optimization
                 tmp_start = time.time()
                 # tmp_row_asses = np.array(gridlayoutOpt.optimizeBA(ori_row_asses, row_asses, labels, change, type, alpha, beta, maxit))
                 tmp_row_asses = np.array(
@@ -96,9 +96,8 @@ class gridOptimizer(object):
                 best_cost = new_cost.copy()
                 # print("cost1", best_cost)
 
-            # 枚举交换优化
             # if maxit2 >= 0:
-            if maxit2 > 0:
+            if maxit2 > 0:  # iteration times for swap optimization
                 change = np.ones(shape=N, dtype='bool')
                 seed = 10
 
@@ -111,7 +110,7 @@ class gridOptimizer(object):
                 best_cost = new_cost.copy()
                 ans_row_asses = new_row_asses2.copy()
 
-            if (type != "Global") and (maxit2 == 0):
+            if (type != "Global") and (maxit2 == 0):  # assignment optimization in cluster
                 change = np.ones(shape=N, dtype='bool')
                 new_row_asses2 = np.array(
                     gridlayoutOpt.optimizeInnerCluster(ori_embedded, new_row_asses, labels, change))
@@ -121,16 +120,16 @@ class gridOptimizer(object):
 
             return ans_row_asses, best_cost
 
-        compact_it = 3
-        global_it = 5
-        alter = True
+        compact_it = 3  # iteration times for the most compact layout
+        global_it = 5  # max iteration times for the global optimization
+        alter = True  # allow to adjust the weight parameter of proximity and compactness
 
         ori_row_asses = row_asses.copy()
 
         ans = row_asses
         new_cost = np.array([2147483647, 2147483647, 2147483647])
 
-        if not swap_op_order and useGlobal:
+        if not swap_op_order and useGlobal:  # Global Step
 
             alter_best = [0, 0, 1, 1]
 
@@ -171,14 +170,14 @@ class gridOptimizer(object):
         end2 = time.time()
         t2 = end2 - start
 
-        if useLocal:
+        if useLocal:  # Local Step
 
             ans, new_cost = solve_op(ori_embedded, ans, convex_type, 1, 0, False, None, maxit, maxit2, swap_cnt)
 
             print("new_cost5", new_cost)
             print("time5", time.time() - start)
 
-        if swap_op_order and useGlobal:
+        if swap_op_order and useGlobal:  # Global Step after local Step
 
             alter_best = [0, 0, 1, 1]
 
@@ -240,28 +239,29 @@ class gridOptimizer(object):
              choose_k=1):
         if pred_labels is None:
             pred_labels = labels.copy()
-        # 初始化信息
-        start = time.time()
+
+        # Initialize
+        start = time.time()  # Record start time
         ans = None
         best = 2147483647
-        X_embedded -= X_embedded.min(axis=0)
+        X_embedded -= X_embedded.min(axis=0)  # Normalize data
         X_embedded /= X_embedded.max(axis=0)
-        num = X_embedded.shape[0]
-        square_len = math.ceil(np.sqrt(num))
+        num = X_embedded.shape[0]  # Number of data points
+        square_len = math.ceil(np.sqrt(num))  # Grid length
         print('num', num)
-        N = square_len * square_len
+        N = square_len * square_len  # Grid size
         maxLabel = 0
         for id in range(num):
             label = labels[id]
             maxLabel = max(maxLabel, label + 1)
 
         def getDist(x1, y1, x2, y2):
-            return np.sqrt(np.square(x1 - x2) + np.square(y1 - y2))
+            return np.sqrt(np.square(x1 - x2) + np.square(y1 - y2))  # Calculate distance
 
-        # baseline layout
+        # Baseline layout
         grids = np.dstack(np.meshgrid(np.linspace(0, 1 - 1.0 / square_len, square_len),
                                       np.linspace(0, 1 - 1.0 / square_len, square_len))) \
-            .reshape(-1, 2)
+            .reshape(-1, 2)  # Create grids
 
         tmp = grids[:, 0].copy()
         grids[:, 0] = grids[:, 1]
@@ -269,17 +269,17 @@ class gridOptimizer(object):
 
         # print(grids)
 
-        original_cost_matrix = cdist(grids, X_embedded, "euclidean")
+        original_cost_matrix = cdist(grids, X_embedded, "euclidean")  # Compute initial cost matrix
         # knn process
-        dummy_points = np.ones((N - original_cost_matrix.shape[1], 2)) * 0.5
+        dummy_points = np.ones((N - original_cost_matrix.shape[1], 2)) * 0.5  # Create dummy data points
         # dummy at [0.5, 0.5]
-        dummy_vertices = (1 - cdist(grids, dummy_points, "euclidean")) * 100
-        cost_matrix = np.concatenate((original_cost_matrix, dummy_vertices), axis=1)
+        dummy_vertices = (1 - cdist(grids, dummy_points, "euclidean")) * 100  # Calculate distances between dummy data points and grids
+        cost_matrix = np.concatenate((original_cost_matrix, dummy_vertices), axis=1)  # Merge cost matrix
 
-        cost_matrix = np.power(cost_matrix, 2)
+        cost_matrix = np.power(cost_matrix, 2)  # Square the cost matrix
 
         # row_asses, col_asses = self.solveKM(cost_matrix)
-        row_asses, col_asses = self.solveJV(cost_matrix)
+        row_asses, col_asses = self.solveJV(cost_matrix)  # Solve the assignment problem of the cost matrix
         # col_asses = col_asses[:num]
         # self.show_grid(row_asses, labels, square_len, 'new.png')
 
@@ -290,7 +290,7 @@ class gridOptimizer(object):
 
         t0 = time.time() - start
 
-        # cluster labels
+        # Cluster labels
         print("start cluster")
         # labels = np.array(gridlayoutOpt.getClusters2(ori_row_asses, labels, pred_labels))
         labels = pred_labels.copy()
@@ -306,7 +306,7 @@ class gridOptimizer(object):
         # data = np.load('T-global.npz')
         # labels = data['labels']
 
-        # 开始优化
+        # Start optimization
         print("start optimize")
         print("--------------------------------------------------")
         start = time.time()
@@ -369,7 +369,7 @@ class gridOptimizer(object):
         new_row_asses = np.array(gridlayoutOpt.optimizeInnerCluster(ori_embedded, new_row_asses, labels, change))
         return new_row_asses
 
-    # 绘图
+    # draw grids
     def show_grid(self, row_asses, grid_labels, square_len, path='new.png', showNum=True, just_save=False):
         def highlight_cell(x, y, ax=None, **kwargs):
             rect = plt.Rectangle((x - .5, y - .5), 1, 1, fill=False, **kwargs)
